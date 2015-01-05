@@ -2,27 +2,20 @@
   ******************************************************************************
   * @file    system_stm32f4xx.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    11-November-2013
   * @brief   CMSIS Cortex-M4 Device Peripheral Access Layer System Source File.
   *          This file is customized to run on STM32F429I-DISCO board only.
-  *
-  *          The STM32F4xx is configured to run at 180 MHz, following the three  
-  *          configuration below:
-  *            - PLL_SOURCE_HSI                : HSI (~16MHz) used to clock the PLL, and
-  *                                              the PLL is used as system clock source.  
-  *            - PLL_SOURCE_HSE                : HSE (8MHz) used to clock the PLL, and 
-  *                                              the PLL is used as system clock source.
-  *            - PLL_SOURCE_HSE_BYPASS(default): HSE bypassed with an external clock 
-  *                                              (8MHz, coming from ST-Link) used to clock
-  *                                              the PLL, and the PLL is used as system
-  *                                              clock source.  
-  * 
+  *          
+  *    Note: The system clock (SYSCLK) is configured to 168 MHz to provide 48 MHz clock
+  *          needed for the USB operation. 
+  *          Please note that the USB is not functional if the system clock is set to 180 MHz.    
+  *             
   * 1.  This file provides two functions and one global variable to be called from 
   *     user application:
   *      - SystemInit(): Setups the system clock (System clock source, PLL Multiplier
   *                      and Divider factors, AHB/APBx prescalers and Flash settings),
-  *                      depending on the configuration made in the clock xls tool.
+  *                      depending on the configuration made in the clock xls tool. 
   *                      This function is called at startup just after reset and 
   *                      before branch to main program. This call is made inside
   *                      the "startup_stm32f429_439xx.s" file.
@@ -30,7 +23,7 @@
   *      - SystemCoreClock variable: Contains the core clock (HCLK), it can be used
   *                                  by the user application to setup the SysTick 
   *                                  timer or configure other parameters.
-  *
+  *                                     
   *      - SystemCoreClockUpdate(): Updates the variable SystemCoreClock and must
   *                                 be called whenever the core clock is changed
   *                                 during program execution.
@@ -47,6 +40,56 @@
   *    in "stm32f4xx.h" file. When HSE is used as system clock source, directly or
   *    through PLL, and you are using different crystal you have to adapt the HSE
   *    value to your own configuration.
+  *
+  * 5. This file configures the system clock as follows:
+  *=============================================================================
+  *=============================================================================
+  *        Supported STM32F4xx device revision    | 
+  *-----------------------------------------------------------------------------
+  *        System Clock source                    | PLL (HSE)
+  *-----------------------------------------------------------------------------
+  *        SYSCLK(Hz)                             | 168000000
+  *-----------------------------------------------------------------------------
+  *        HCLK(Hz)                               | 168000000
+  *-----------------------------------------------------------------------------
+  *        AHB Prescaler                          | 1
+  *-----------------------------------------------------------------------------
+  *        APB1 Prescaler                         | 4
+  *-----------------------------------------------------------------------------
+  *        APB2 Prescaler                         | 2
+  *-----------------------------------------------------------------------------
+  *        HSE Frequency(Hz)                      | 8000000
+  *-----------------------------------------------------------------------------
+  *        PLL_M                                  | 8
+  *-----------------------------------------------------------------------------
+  *        PLL_N                                  | 336
+  *-----------------------------------------------------------------------------
+  *        PLL_P                                  | 2
+  *-----------------------------------------------------------------------------
+  *        PLL_Q                                  | 7
+  *-----------------------------------------------------------------------------
+  *        PLLI2S_N                               | NA
+  *-----------------------------------------------------------------------------
+  *        PLLI2S_R                               | NA
+  *-----------------------------------------------------------------------------
+  *        I2S input clock                        | NA
+  *-----------------------------------------------------------------------------
+  *        VDD(V)                                 | 3,3
+  *-----------------------------------------------------------------------------
+  *        Main regulator output voltage          | Scale1 mode
+  *-----------------------------------------------------------------------------
+  *        Flash Latency(WS)                      | 5
+  *-----------------------------------------------------------------------------
+  *        Prefetch Buffer                        | ON
+  *-----------------------------------------------------------------------------
+  *        Instruction cache                      | ON
+  *-----------------------------------------------------------------------------
+  *        Data cache                             | ON
+  *-----------------------------------------------------------------------------
+  *        Require 48MHz for USB OTG FS,          | Enabled
+  *        SDIO and RNG clock                     |
+  *-----------------------------------------------------------------------------
+  *=============================================================================
   ****************************************************************************** 
   * @attention
   *
@@ -110,21 +153,10 @@
 /******************************************************************************/
 
 /************************* PLL Parameters *************************************/
-/* Select the PLL clock source */
-
-//#define PLL_SOURCE_HSI        // HSI (~16 MHz) used to clock the PLL, and the PLL is used as system clock source
-#define PLL_SOURCE_HSE        // HSE (8MHz) used to clock the PLL, and the PLL is used as system clock source
-//#define PLL_SOURCE_HSE_BYPASS   // HSE bypassed with an external clock (8MHz, coming from ST-Link) used to clock
-                                // the PLL, and the PLL is used as system clock source
-
-
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
-#if defined  (PLL_SOURCE_HSI)
-#define PLL_M      16
-#else
 #define PLL_M      8
-#endif
-#define PLL_N      360
+
+#define PLL_N      336
 
 /* SYSCLK = PLL_VCO / PLL_P */
 #define PLL_P      2
@@ -133,8 +165,6 @@
 #define PLL_Q      7
 
 /******************************************************************************/
-
-
 
 /**
   * @}
@@ -152,7 +182,7 @@
   * @{
   */
 
-  uint32_t SystemCoreClock = 180000000;
+  uint32_t SystemCoreClock = 168000000;
 
   __I uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 
@@ -324,21 +354,9 @@ static void SetSysClock(void)
 /******************************************************************************/
   __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
   
-
-#ifdef PLL_SOURCE_HSI
-
-      /* Configure the main PLL */
-    RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) -1) << 16) |
-                   (RCC_PLLCFGR_PLLSRC_HSI) | (PLL_Q << 24);
-
-#else /* PLL_SOURCE_HSE_BYPASS or PLL_SOURCE_HSE */
-
   /* Enable HSE */
   RCC->CR |= ((uint32_t)RCC_CR_HSEON);
-#ifdef PLL_SOURCE_HSE_BYPASS
-    /* Enable HSE */
-  RCC->CR |= ((uint32_t)RCC_CR_HSEBYP);
-#endif   /* PLL_SOURCE_HSE_BYPASS */
+ 
   /* Wait till HSE is ready and if Time out is reached exit */
   do
   {
@@ -357,18 +375,7 @@ static void SetSysClock(void)
 
   if (HSEStatus == (uint32_t)0x01)
   {
-    /* Configure the main PLL */
-    RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) -1) << 16) |
-                   (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
-
-  }
-    else
-  { /* If HSE fails to start-up, the application will have wrong clock
-         configuration. User can add here some code to deal with this error */
-  }
-#endif /*PLL_SOURCE_HSI*/
-  
-      /* Select regulator voltage output Scale 1 mode, System frequency up to 180 MHz */
+    /* Select regulator voltage output Scale 1 mode, System frequency up to 168 MHz */
     RCC->APB1ENR |= RCC_APB1ENR_PWREN;
     PWR->CR |= PWR_CR_VOS;
 
@@ -381,6 +388,10 @@ static void SetSysClock(void)
     /* PCLK1 = HCLK / 4*/
     RCC->CFGR |= RCC_CFGR_PPRE1_DIV4;
 
+    /* Configure the main PLL */
+    RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) -1) << 16) |
+                   (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
+
     /* Enable the main PLL */
     RCC->CR |= RCC_CR_PLLON;
 
@@ -388,16 +399,6 @@ static void SetSysClock(void)
     while((RCC->CR & RCC_CR_PLLRDY) == 0)
     {
     }
-
-    /* Enable the Over-drive to extend the clock frequency to 180 Mhz */
-    PWR->CR |= PWR_CR_ODEN;
-    while((PWR->CSR & PWR_CSR_ODRDY) == 0)
-    {
-    }
-    PWR->CR |= PWR_CR_ODSWEN;
-    while((PWR->CSR & PWR_CSR_ODSWRDY) == 0)
-    {
-    } 
      
     /* Configure Flash prefetch, Instruction cache, Data cache and wait state */
     FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN |FLASH_ACR_DCEN |FLASH_ACR_LATENCY_5WS;
@@ -410,13 +411,19 @@ static void SetSysClock(void)
     while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS ) != RCC_CFGR_SWS_PLL);
     {
     }
+  }
+  else
+  { /* If HSE fails to start-up, the application will have wrong clock
+         configuration. User can add here some code to deal with this error */
+  }
+
 }
   
 #ifdef DATA_IN_ExtSDRAM
 /**
   * @brief  Setup the external memory controller.
   *         Called in startup_stm32f429_439xx.s before jump to main.
-  *         This function configures the external SDRAM mounted on STM324x9I_EVAL board
+  *         This function configures the external SDRAM mounted on STM32F429I DISCO board
   *         This SDRAM will be used as program data memory (including heap and stack).
   * @param  None
   * @retval None
