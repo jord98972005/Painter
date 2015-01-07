@@ -8,8 +8,8 @@ HEX_IMAGE = $(PROJECT).hex
 STDP ?= STM32F429I-Discovery_FW_V1.0.1
 
 # Toolchain configurations
-CROSS_COMPILE ?= arm-none-eabi-
-CC = $(CROSS_COMPILE)gcc
+CROSS_COMPILE ?= sudo arm-none-eabi-
+CC = /usr/local/gcc-arm-none-eabi-4_9-2014q4/bin/arm-none-eabi-gcc
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
@@ -56,6 +56,9 @@ OBJS = \
 	./src/i2c_ops.o \
 	./src/ov7670.o \
 	./src/i2c_routine.o \
+	./lcd/tm_stm32f4_fonts.o\
+	./lcd/tm_stm32f4_ili9341.o\
+	./lcd/tm_stm32f4_spi.o\
 
 # STARTUP FILE
 OBJS += startup_stm32f429_439xx.o
@@ -78,6 +81,7 @@ OBJS += \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dcmi.o \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.o \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.o \
+    $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.o \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.o 
 
 

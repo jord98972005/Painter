@@ -4,6 +4,8 @@
 #include "stm32f4xx_i2c.h"
 #include "stm32f4xx_dcmi.h"
 #include "stm32f4xx_dma.h"
+#include "tm_stm32f4_ili9341.h"
+#include "tm_stm32f4_fonts.h"
 #include "i2c_ops.h"
 #include "ov7670.h"
 #include "stm32f4xx.h"
@@ -11,6 +13,7 @@
 #include "ov7670_regsmap.h"
 
 volatile int32_t dma_handler_counter = 0;
+uint16_t j=0;
 
 uint32_t camera_frame[10]; // for 320*240 resolution
 
@@ -18,9 +21,9 @@ void RCC_Configuration(void)
 {
 	/* --------------------------- System Clocks Configuration -----------    ------*/
 	/* USART1 clock enable */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
 	/* GPIOA clock enable */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 }
 
 void GPIO_Configuration(void)
@@ -28,16 +31,16 @@ void GPIO_Configuration(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
 
 	/*-------------------------- GPIO Configuration ------------------------    ----*/
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_8;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
 
 	/* Connect USART pins to AF */
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);   // USART1_TX
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);  // USART1_RX
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_USART3);   // USART1_TX
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_USART3);  // USART1_RX
 }
 
 void USART1_Configuration(void)
@@ -59,15 +62,16 @@ void USART1_Configuration(void)
 	USART_InitStructure.USART_Parity = USART_Parity_No;
 	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-	USART_Init(USART1, &USART_InitStructure);
-	USART_Cmd(USART1, ENABLE);
+	USART_Init(USART3, &USART_InitStructure);
+	USART_Cmd(USART3, ENABLE);
 }
 
 void USART1_puts(char* s)
 {
 	while(*s) {
-		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-		USART_SendData(USART1, *s);
+		//USART_SendData(USART3, *s++);
+		while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+		USART_SendData(USART3, *s);
 		s++;
 	}
 }
@@ -302,7 +306,7 @@ void camera_init(void)
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource8, GPIO_AF_MCO);
 
 	/* dcmi interface init */
-/*	DCMI_InitTypeDef camera_init;
+	DCMI_InitTypeDef camera_init;
 
 	camera_init.DCMI_CaptureMode = DCMI_CaptureMode_SnapShot;
 	camera_init.DCMI_CaptureRate = DCMI_CaptureRate_All_Frame;
@@ -311,8 +315,8 @@ void camera_init(void)
 	camera_init.DCMI_PCKPolarity = DCMI_PCKPolarity_Falling;
 	camera_init.DCMI_SynchroMode = DCMI_SynchroMode_Hardware;
 	camera_init.DCMI_VSPolarity = DCMI_VSPolarity_High;
-
-	DCMI_StructInit(&camera_init);
+ 	DCMI_Init(&camera_init);
+	//DCMI_StructInit(&camera_init);
 	// enable DCMI interface
 	DCMI_Cmd(ENABLE);
 
@@ -468,6 +472,8 @@ int main(void)
 	RCC_Configuration();
 	GPIO_Configuration();
 	USART1_Configuration();
+	TM_ILI9341_Init();
+    TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_2);
 
 	RCC_APB2PeriphClockCmd (RCC_APB2Periph_SYSCFG, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
@@ -487,9 +493,38 @@ int main(void)
 	//dma_init();
 	c = I2C_readreg(0x0a);
 //	NVIC_EnableIRQ(TIM3_IRQn);
-
 	//    TIM9->CR1 |= TIM_CR1_CEN;
 	TIM3->CR1 |= TIM_CR1_CEN;
+
+	 uint8_t creg=0;
+creg= I2C_readreg(0x1c);
+	for(j=0;j<8;j++){
+ 		if((creg&0x80)==0x80)	// If bit in Data is high, write high on SCCB/I2C
+      {  
+        TM_ILI9341_Puts(20, 20*j, "1", &TM_Font_11x18, ILI9341_COLOR_BLACK, ILI9341_COLOR_GREEN2);
+      }
+      else 
+      {
+        TM_ILI9341_Puts(20, 20*j, "0", &TM_Font_11x18, ILI9341_COLOR_BLACK, ILI9341_COLOR_GREEN2);
+       }
+       creg<<=1; 
+    }  
+
+    uint8_t dreg=0;
+
+dreg = I2C_readreg(0x1d);
+for(j=0;j<8;j++){
+ 		if((dreg&0x80)==0x80)	// If bit in Data is high, write high on SCCB/I2C
+      {  
+        TM_ILI9341_Puts(60, 20*j, "1", &TM_Font_11x18, ILI9341_COLOR_BLACK, ILI9341_COLOR_GREEN2);
+      }
+      else 
+      {
+        TM_ILI9341_Puts(60, 20*j, "0", &TM_Font_11x18, ILI9341_COLOR_BLACK, ILI9341_COLOR_GREEN2);
+       }
+       dreg<<=1; 
+    }  
+
 
 	if(c == 0x76)
 	{
@@ -504,6 +539,11 @@ int main(void)
 		if(dma_handler_counter == 10)
 			GPIO_SetBits(GPIOG, GPIO_Pin_14);
 	}
+
+
+DCMI_DeInit();
+
+
 
 	return 0;
 }
