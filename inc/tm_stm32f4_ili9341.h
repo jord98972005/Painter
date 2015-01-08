@@ -354,7 +354,7 @@ extern void TM_ILI9341_DrawCircle(int16_t x0, int16_t y0, int16_t r, uint32_t co
  * - uint32_t color: circle color
  */
 extern void TM_ILI9341_DrawFilledCircle(int16_t x0, int16_t y0, int16_t r, uint32_t color);
-extern void TM_ILI9341_set_fifo_window(void);
+extern void TM_ILI9341_DisplayWindow(void);
 void TM_ILI9341_write_reg(uint8_t reg,uint8_t data);
 void TM_ILI9341_InitLCD(void);
 void TM_ILI9341_SendData(uint8_t data);

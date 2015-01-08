@@ -20,26 +20,26 @@
 
 
 extern void TM_SPI1_Init(TM_SPI_PinsPack_t pinspack);
-//extern void TM_SPI2_Init(TM_SPI_PinsPack_t pinspack);
-//extern void TM_SPI3_Init(TM_SPI_PinsPack_t pinspack);
+extern void TM_SPI2_Init(TM_SPI_PinsPack_t pinspack);
+extern void TM_SPI3_Init(TM_SPI_PinsPack_t pinspack);
 extern void TM_SPI4_Init(TM_SPI_PinsPack_t pinspack);
 extern void TM_SPI5_Init(TM_SPI_PinsPack_t pinspack);
-//extern void TM_SPI6_Init(TM_SPI_PinsPack_t pinspack);
+extern void TM_SPI6_Init(TM_SPI_PinsPack_t pinspack);
 
 void TM_SPI_Init(SPI_TypeDef* SPIx, TM_SPI_PinsPack_t pinspack) {
 	if (SPIx == SPI1) {
 		TM_SPI1_Init(pinspack);
-	}/* else if (SPIx == SPI2) {
+	} else if (SPIx == SPI2) {
 		TM_SPI2_Init(pinspack);
 	} else if (SPIx == SPI3) {
 		TM_SPI3_Init(pinspack);
-	} */else if (SPIx == SPI4) {
+	} else if (SPIx == SPI4) {
 		TM_SPI4_Init(pinspack);
 	} else if (SPIx == SPI5) {
 		TM_SPI5_Init(pinspack);
-	} /*else if (SPIx == SPI6) {
+	} else if (SPIx == SPI6) {
 		TM_SPI6_Init(pinspack);
-	}*/
+	}
 }
 
 uint8_t TM_SPI_Send(SPI_TypeDef* SPIx, uint8_t data) {
@@ -168,7 +168,7 @@ void TM_SPI1_Init(TM_SPI_PinsPack_t pinspack) {
 	SPI_Cmd(SPI1, ENABLE);
 }
 
-/*void TM_SPI2_Init(TM_SPI_PinsPack_t pinspack) {
+void TM_SPI2_Init(TM_SPI_PinsPack_t pinspack) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	SPI_InitTypeDef SPI_InitStruct;
 
@@ -296,7 +296,7 @@ void TM_SPI3_Init(TM_SPI_PinsPack_t pinspack) {
 	SPI_InitStruct.SPI_NSS = SPI_NSS_Soft;
 	SPI_Init(SPI3, &SPI_InitStruct);
 	SPI_Cmd(SPI3, ENABLE);
-}*/
+}
 
 void TM_SPI4_Init(TM_SPI_PinsPack_t pinspack) {
 	GPIO_InitTypeDef GPIO_InitStruct;
@@ -418,7 +418,7 @@ void TM_SPI5_Init(TM_SPI_PinsPack_t pinspack) {
 	SPI_Cmd(SPI5, ENABLE);
 }
 
-/*void TM_SPI6_Init(TM_SPI_PinsPack_t pinspack) {
+void TM_SPI6_Init(TM_SPI_PinsPack_t pinspack) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	SPI_InitTypeDef SPI_InitStruct;
 
@@ -463,4 +463,4 @@ void TM_SPI5_Init(TM_SPI_PinsPack_t pinspack) {
 	SPI_InitStruct.SPI_NSS = SPI_NSS_Soft;
 	SPI_Init(SPI6, &SPI_InitStruct);
 	SPI_Cmd(SPI6, ENABLE);
-}*/
+}

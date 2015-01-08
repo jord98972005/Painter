@@ -430,7 +430,7 @@ void TM_ILI9341_DrawFilledCircle(int16_t x0, int16_t y0, int16_t r, uint32_t col
     }
 }
 
-void TM_ILI9341_set_fifo_window(void)
+void TM_ILI9341_DisplayWindow(void)
 {
   	TM_ILI9341_SetCursorPosition(0, 0, 239, 319);
            TM_ILI9341_SendCommand(ILI9341_GRAM);

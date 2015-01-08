@@ -23,6 +23,9 @@ uint32_t ov7670_init()
 
 	I2C_writereg(REG_COM10, COM10_PCLK_HB); /* set pclk to switch only when data is valid */
 	USART1_puts("pclk switch!\r\n");
+	/*I2C_writereg(TestPattern, 0xB5);	
+	USART1_puts("Test Pattern !\r\n");*/
+
 
 	return 0;
 }
