@@ -29,13 +29,13 @@ void I2C_start(I2C_TypeDef* I2Cx, uint8_t address, uint8_t direction)
 	// Send i2c_dev START condition
 	I2C_GenerateSTART(I2Cx, ENABLE);
 	
-	USART1_puts("send start!\r\n");
+	//USART1_puts("send start!\r\n");
 	// wait for i2c_dev EV5 --> Slave has acknowledged start condition
 //	while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_MODE_SELECT));
 	// Send slave Address for write
 	I2C_Send7bitAddress(I2Cx, address, direction);
 
-	USART1_puts("send address!\r\n");
+	//USART1_puts("send address!\r\n");
 	/* wait for i2c_dev EV6, check if
 	 * either Slave has acknowledged Master transmitter or
 	 * Master receiver mode, depending on the transmission
@@ -119,21 +119,21 @@ uint8_t I2C_writereg(uint8_t reg, uint8_t data)
 	USART1_puts("start!\r\n");
 
 	I2C_start(i2c_dev, SLAVE_ADDRESS, I2C_Direction_Transmitter); // start a transmission in Master transmitter mode
-	USART1_puts("write start!\r\n");
+	//USART1_puts("write start!\r\n");
 	I2C_write(i2c_dev, (uint8_t) reg); // write one byte to the slave
-	USART1_puts("write!one \r\n");
+	//USART1_puts("write!one \r\n");
 	Delay(100);
 	I2C_write(i2c_dev, (uint8_t) data); // write one byte to the slave
-	USART1_puts("write!two \r\n");
+	//USART1_puts("write!two \r\n");
 	I2C_stop(i2c_dev); // stop the transmission
-	USART1_puts("stop!\r\n");
+	//USART1_puts("stop!\r\n");
 	Delay(100);
 	I2C_start(i2c_dev, SLAVE_ADDRESS, I2C_Direction_Receiver); // start a transmission in Master receiver mode
-	USART1_puts("start!\r\n");
+	//USART1_puts("start!\r\n");
 	tmp = I2C_read_nack(i2c_dev);
-	USART1_puts("write nack!\r\n");
+	//USART1_puts("write nack!\r\n");
 	I2C_stop(i2c_dev); // stop the transmission
-	USART1_puts("stop!\r\n");
+	//USART1_puts("stop!\r\n");
 	Delay(100);
 
 	return tmp;

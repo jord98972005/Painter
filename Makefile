@@ -9,7 +9,8 @@ STDP ?= STM32F429I-Discovery_FW_V1.0.1
 
 # Toolchain configurations
 CROSS_COMPILE ?= sudo arm-none-eabi-
-CC = /usr/local/gcc-arm-none-eabi-4_9-2014q4/bin/arm-none-eabi-gcc
+CC = arm-none-eabi-gcc
+#/usr/local/gcc-arm-none-eabi-4_9-2014q4/bin/arm-none-eabi-gcc
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump

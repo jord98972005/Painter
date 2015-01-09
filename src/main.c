@@ -18,6 +18,23 @@ uint16_t j=0;
 
 uint32_t camera_frame[10]; // storage frame data in 320*240 resolution
 
+void LED_Configuration(void){
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
+
+	GPIO_InitTypeDef GPIOG_Init;
+
+	GPIOG_Init.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14;
+	GPIOG_Init.GPIO_Mode = GPIO_Mode_OUT;
+	GPIOG_Init.GPIO_OType = GPIO_OType_PP;
+	GPIOG_Init.GPIO_Speed = GPIO_Speed_100MHz;
+
+	GPIO_Init(GPIOG, &GPIOG_Init);
+}
+
+
+
+
+
 void RCC_Configuration(void)
 {
 	/* --------------------------- System Clocks Configuration -----------    ------*/
@@ -175,6 +192,7 @@ void camera_init(void)
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_DCMI);
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_DCMI);
 
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_DCMI);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_DCMI);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource8, GPIO_AF_DCMI);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource9, GPIO_AF_DCMI);
@@ -196,13 +214,14 @@ void camera_init(void)
 
 	mco_Init.GPIO_Pin = GPIO_Pin_8;
 	mco_Init.GPIO_Mode = GPIO_Mode_AF;
-	mco_Init.GPIO_Speed = GPIO_Speed_100MHz;
+	mco_Init.GPIO_Speed = GPIO_Speed_50MHz;
 	mco_Init.GPIO_OType = GPIO_OType_PP;
 	GPIO_Init(GPIOA, &mco_Init);
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource8, GPIO_AF_MCO);
 
 //*********************DCMI & DMA Configuration****************************************************************
 	/* dcmi interface init */
+	DCMI_DeInit();
 	DCMI_InitTypeDef camera_init;
 
 	camera_init.DCMI_CaptureMode = DCMI_CaptureMode_Continuous;//DCMI_CaptureMode_SnapShot;
@@ -214,13 +233,14 @@ void camera_init(void)
 	camera_init.DCMI_VSPolarity = DCMI_VSPolarity_High;
  	DCMI_Init(&camera_init);
 
-
+ 	 /* Configures the DMA2 to transfer Data from DCMI */
+ 	
 	DMA_DeInit(DMA2_Stream1);
 
 	DMA_InitTypeDef dma_init;
 
 	dma_init.DMA_Channel = DMA_Channel_1;
-	dma_init.DMA_PeripheralBaseAddr = (uint32_t) &(DCMI->DR);
+	dma_init.DMA_PeripheralBaseAddr =(uint32_t) &(DCMI->DR);// 0x50050028
 	dma_init.DMA_Memory0BaseAddr = (uint32_t) camera_frame;//lcd address
 	dma_init.DMA_DIR = DMA_DIR_PeripheralToMemory;
 	dma_init.DMA_BufferSize = 1;
@@ -253,7 +273,6 @@ void camera_init(void)
 	//Enable DCMIinterrupt
 	DMA_Cmd(DMA2_Stream1, ENABLE); 
  	DCMI_Cmd(ENABLE);
-
 
 
 
@@ -369,24 +388,27 @@ int flag = 0;
 void DCMI_IRQHandler(void)
 {
 	int a;
-  if( DCMI_GetITStatus(DCMI_IT_VSYNC)!= RESET)
-  {
-    DCMI_ClearITPendingBit(DCMI_IT_VSYNC);
-    TM_ILI9341_DisplayWindow();
-    for(a=0;a<7680;a++){
-    TM_ILI9341_SendData(camera_frame[0]);
-	TM_ILI9341_SendData(camera_frame[1]);
-	TM_ILI9341_SendData(camera_frame[2]);
-	TM_ILI9341_SendData(camera_frame[3]);
-	TM_ILI9341_SendData(camera_frame[4]);
-	TM_ILI9341_SendData(camera_frame[5]);
-	TM_ILI9341_SendData(camera_frame[6]);
-	TM_ILI9341_SendData(camera_frame[7]);
-	TM_ILI9341_SendData(camera_frame[8]);
-	TM_ILI9341_SendData(camera_frame[9]);
+ 	 if( DCMI_GetITStatus(DCMI_IT_VSYNC)!= RESET)
+ 	 {
+  		GPIO_SetBits(GPIOG, GPIO_Pin_14);
+    		DCMI_ClearITPendingBit(DCMI_IT_VSYNC);
+    		//TM_ILI9341_DisplayWindow();
+    		TM_ILI9341_SetCursorPosition(0, 0, 239, 319);
+           	TM_ILI9341_SendCommand(ILI9341_GRAM);
+   		 for(a=0;a<7680;a++){
+   			TM_ILI9341_SendData(camera_frame[0]);camera_frame[0]=0;
+			TM_ILI9341_SendData(camera_frame[1]);camera_frame[1]=0;
+			TM_ILI9341_SendData(camera_frame[2]);camera_frame[2]=0;
+			TM_ILI9341_SendData(camera_frame[3]);camera_frame[3]=0;
+			TM_ILI9341_SendData(camera_frame[4]);camera_frame[4]=0;
+			TM_ILI9341_SendData(camera_frame[5]);camera_frame[5]=0;
+			TM_ILI9341_SendData(camera_frame[6]);camera_frame[6]=0;
+			TM_ILI9341_SendData(camera_frame[7]);camera_frame[7]=0;
+			TM_ILI9341_SendData(camera_frame[8]);camera_frame[8]=0;
+			TM_ILI9341_SendData(camera_frame[9]);camera_frame[9]=0;
 
-	}
-  }
+		}
+ 	 }GPIO_ResetBits(GPIOG, GPIO_Pin_14);
 }
 
 
@@ -422,24 +444,20 @@ int main(void)
 	RCC_Configuration();
 	GPIO_Configuration();
 	USART1_Configuration();
+	LED_Configuration();
 	TM_ILI9341_Init();
-    TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_2);
+  	TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_2);
 
 	RCC_APB2PeriphClockCmd (RCC_APB2Periph_SYSCFG, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
-
-	GPIO_InitTypeDef GPIOG_Init;
-
-	GPIOG_Init.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14;
-	GPIOG_Init.GPIO_Mode = GPIO_Mode_OUT;
-	GPIOG_Init.GPIO_OType = GPIO_OType_PP;
-	GPIOG_Init.GPIO_Speed = GPIO_Speed_100MHz;
-
-	GPIO_Init(GPIOG, &GPIOG_Init);
 	camera_init();
 	
 	c = I2C_readreg(0x0a);
-	
+
+	if(c == 0x76)
+	{
+		ov7670_init();
+		GPIO_SetBits(GPIOG, GPIO_Pin_13);
+	}
 	/* uint8_t creg=0;
 creg= I2C_readreg(0x1c);
 	for(j=0;j<8;j++){
@@ -469,20 +487,12 @@ for(j=0;j<8;j++){
        dreg<<=1; 
     }  */
 
+	DCMI_CaptureCmd(ENABLE);
+	
 
-	if(c == 0x76)
-	{
-		ov7670_init();
-		GPIO_SetBits(GPIOG, GPIO_Pin_13);
-	}
 
-	while(1)
-	{
-		if(dma_handler_counter == 10)
-			GPIO_SetBits(GPIOG, GPIO_Pin_14);
-	}
 
-DCMI_CaptureCmd(ENABLE);
+
 
 	return 0;
 }

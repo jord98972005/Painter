@@ -10,3 +10,4 @@ void camera_init(void);
 void DCMI_IRQHandler(void);
 //void SendPicture(void);
 char* itoa(int value, char* result, int base);
+void LED_Configuration(void);
