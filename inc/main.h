@@ -1,12 +1,2 @@
 void USART1_puts(char* s);
 char* itoa(int value, char* result, int base);
-void RCC_Configuration(void);
-void GPIO_Configuration(void);
-void USART1_Configuration(void);
-void USART1_puts(char* s);
-//void dma_init(void);
-void camera_init(void);
-//void DMA2_Stream1_IRQHandler(void);
-void DCMI_IRQHandler(void);
-//void SendPicture(void);
-char* itoa(int value, char* result, int base);

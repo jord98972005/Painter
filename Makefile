@@ -56,9 +56,14 @@ OBJS = \
 	./src/i2c_ops.o \
 	./src/ov7670.o \
 	./src/i2c_routine.o \
+	./src/usb_bsp.o \
+	./src/usbh_usr.o \
+	./src/command.o \
+	./src/fattime.o \
+	./src/flash_if.o\
 	./lcd/tm_stm32f4_fonts.o\
 	./lcd/tm_stm32f4_ili9341.o\
-	./lcd/tm_stm32f4_spi.o\
+	./lcd/tm_stm32f4_spi.o
 
 # STARTUP FILE
 OBJS += startup_stm32f429_439xx.o
@@ -66,11 +71,18 @@ OBJS += startup_stm32f429_439xx.o
 # CMSIS
 CFLAGS += -I$(STDP)/Libraries/CMSIS/Device/ST/STM32F4xx/Include
 CFLAGS += -I$(STDP)/Libraries/CMSIS/Include
+CFLAGS += -I$(STDP)/Utilities/Third_Party/fat_fs/inc
+CFLAGS += -I$(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/inc
+CFLAGS += -I$(STDP)/Libraries/STM32_USB_HOST_Library/Core/inc
+CFLAGS += -I$(STDP)/Libraries/STM32_USB_HOST_Library/Class/MSC/inc
+CFLAGS += -I$(STDP)/Libraries/STM32_USB_OTG_Driver/inc
 
 # STM32F4xx_StdPeriph_Driver
 CFLAGS += -DUSE_STDPERIPH_DRIVER
-CFLAGS += -I$(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/inc
-CFLAGS += -D"assert_param(expr)=((void)0)"
+CFLAGS += -DUSE_USB_OTG_HS
+CFLAGS += -DUSE_EMBEDDED_PHY
+
+#CFLAGS += -D"assert_param(expr)=((void)0)"
 OBJS += \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/misc.o \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.o \
@@ -80,10 +92,23 @@ OBJS += \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_i2c.o \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dcmi.o \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.o \
-    $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.o \
     $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.o \
-    $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.o 
-
+    $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.o \
+    $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.o \
+    $(STDP)/Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.o \
+	$(STDP)/Utilities/Third_Party/fat_fs/src/ff.o \
+	$(STDP)/Libraries/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_bot.o \
+	$(STDP)/Libraries/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_core.o \
+	$(STDP)/Libraries/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_fatfs.o \
+	$(STDP)/Libraries/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_scsi.o \
+	$(STDP)/Libraries/STM32_USB_HOST_Library/Core/src/usbh_core.o \
+	$(STDP)/Libraries/STM32_USB_HOST_Library/Core/src/usbh_hcs.o \
+	$(STDP)/Libraries/STM32_USB_HOST_Library/Core/src/usbh_ioreq.o \
+	$(STDP)/Libraries/STM32_USB_HOST_Library/Core/src/usbh_stdreq.o \
+	$(STDP)/Libraries/STM32_USB_OTG_Driver/src/usb_core.o \
+	$(STDP)/Libraries/STM32_USB_OTG_Driver/src/usb_hcd.o \
+	$(STDP)/Libraries/STM32_USB_OTG_Driver/src/usb_hcd_int.o \
+	$(STDP)/Utilities/STM32F429I-Discovery/stm32f429i_discovery.o
 
 # STM32F429I-Discovery Utilities
 CFLAGS += -I$(STDP)/Utilities/STM32F429I-Discovery

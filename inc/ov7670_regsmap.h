@@ -140,7 +140,5 @@
 #define AWBCTR2         0x6d    /* AWB Control 2 */
 #define AWBCTR1         0x6e    /* AWB Control 1 */
 #define AWBCTR0         0x6f    /* AWB Control 0 */
-#define TestPattern		0x71    /*Test Pattern 0xB5*/
-
 
 #endif /* _OV7670_REGSMAP_H_ */
